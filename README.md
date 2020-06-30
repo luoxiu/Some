@@ -1,6 +1,6 @@
 # Some
 
-The missing iterables for Swift.
+The missing iterables in Swift.
 
 - [x] PriorityQueue ( BinaryHeap )
 - [x] CircularBuffer ( RingBuffer ) 
