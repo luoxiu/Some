@@ -1,6 +1,6 @@
 # Some
 
-The missing collections for Swift.
+The missing iterables for Swift.
 
-- [x] PriorityQueue
+- [x] PriorityQueue ( BinaryHeap )
 - [x] CircularBuffer ( RingBuffer ) 
