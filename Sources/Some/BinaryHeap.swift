@@ -128,10 +128,11 @@ public struct BinaryHeap<Element> {
     public static func heapify<S>(_ s: S, comparator: @escaping Comparator) -> BinaryHeap<S.Element> where S: Sequence, S.Element == Element {
         var heap = BinaryHeap<Element>(comparator)
         heap.storage = ContiguousArray(s)
+
+        guard var index = heap.parentIndex(of: heap.storage.count - 1) else {
+            return heap
+        }
         
-        let count = heap.storage.count
-        
-        var index = count / 2 - 1
         while index >= 0 {
             heap.heapifyDown(index)
             index -= 1
