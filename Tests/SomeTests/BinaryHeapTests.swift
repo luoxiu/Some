@@ -4,10 +4,9 @@ import XCTest
 final class BinaryHeapTests: XCTestCase {
     
     func testIndex() {
-        let nums = Utils.makeRandomInts(100)
         var heap = BinaryHeap<Int>(>)
-        nums.forEach {
-            heap.push($0)
+        for i in 0..<100 {
+            heap.push(i)
         }
         
         XCTAssertEqual(heap.parentIndex(of: -1), nil)
@@ -26,39 +25,99 @@ final class BinaryHeapTests: XCTestCase {
         XCTAssertEqual(heap.rightChildIndex(of: 0), 2)
     }
     
-    func testInsert() {
-        let nums = Utils.makeRandomInts(100)
-
+    func testPush() {
         var heap = BinaryHeap<Int>(>)
+        
+        let nums = Utils.makeRandomInts(100)
+        
         for num in nums {
             heap.push(num)
-            XCTAssertEqual(heap.peek(), heap.storage.max())
+            
+            let peek = heap.peek()
+            XCTAssertEqual(peek, Array(heap).max())
         }
     }
     
     func testPop() {
-        let nums = Utils.makeRandomInts(100)
         var heap = BinaryHeap<Int>(>)
-        nums.forEach {
-            heap.push($0)
+        
+        let nums = Utils.makeRandomInts(100)
+        
+        for num in nums {
+            heap.push(num)
         }
+        
+        let iterator = AnyIterator {
+            heap.pop()
+        }
+        XCTAssertEqual(Array(iterator), Array(nums.sorted(by: >)))
+        XCTAssertEqual(Array(heap), [])
+    }
+    
+    func testIsEmpty() {
+        var heap = BinaryHeap<Int>(>)
+        XCTAssertTrue(heap.isEmpty)
+        
+        heap.push(1)
+        XCTAssertFalse(heap.isEmpty)
+        
+        heap.pop()
+        XCTAssertTrue(heap.isEmpty)
+    }
+    
+    func testCount() {
+        var heap = BinaryHeap<Int>(>)
+        XCTAssertEqual(heap.count, 0)
+        
+        heap.push(1)
+        XCTAssertEqual(heap.count, 1)
+        
+        heap.push(2)
+        XCTAssertEqual(heap.count, 2)
+        
+        for i in 0..<100 {
+            heap.push(i)
+        }
+        XCTAssertEqual(heap.count, 102)
+    }
+    
+    func testRemove() {
+        var heap = BinaryHeap<Int>(>)
+        
+        let nums = Utils.makeRandomInts(100)
+        
+        for num in nums {
+            heap.push(num)
+        }
+        
+        let random = nums.randomElement()!
+        
+        var copy = nums
+        heap.removeAll(where: { $0 == random })
+        copy.removeAll(where: { $0 == random })
+        XCTAssertEqual(heap.count, copy.count)
+        
+        heap.removeAll()
+        XCTAssertTrue(heap.isEmpty)
+    }
+    
+    func testPopAndPush() {
+        var heap = BinaryHeap<Int>(>)
+        heap.push(0)
+        
+        let nums = Utils.makeRandomInts(100)
+        
+        for num in nums {
+            let peak = heap.peek()
+            let count = heap.count
+            
+            let pop = heap.popAndPush(num)
+         
+            XCTAssertEqual(pop, peak)
+            XCTAssertEqual(heap.count, count)
+        }
+    }
 
-        for (a, b) in zip(heap, nums.sorted(by: >)) {
-            XCTAssertEqual(a, b)
-        }
-    }
-    
-    func testPeak() {
-        let nums = Utils.makeRandomInts(100)
-        var heap = BinaryHeap<Int>(>)
-        nums.forEach {
-            heap.push($0)
-        }
-        for _ in nums {
-            XCTAssertEqual(heap.peek(), nums.max())
-        }
-    }
-    
     func testSequence() {
         let nums = Utils.makeRandomInts(100)
         var heap = BinaryHeap<Int>(>)
@@ -84,13 +143,4 @@ final class BinaryHeapTests: XCTestCase {
             XCTAssertEqual(a, b)
         }
     }
-    
-    static var allTests = [
-        ("testIndex", testIndex),
-        ("testInsert", testInsert),
-        ("testPop", testPop),
-        ("testPeak", testPeak),
-        ("testSequence", testSequence),
-        ("testHeapify", testHeapify),
-    ]
 }

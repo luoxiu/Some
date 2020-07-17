@@ -1,6 +1,6 @@
 extension Never {
     
-    static var unimplemented: Never {
-        return fatalError("unimplemented")
+    static func unimplemented(file: StaticString = #file, line: UInt = #line) -> Never {
+        fatalError("unimplemented", file: file, line: line)
     }
 }

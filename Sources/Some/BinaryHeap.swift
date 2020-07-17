@@ -1,6 +1,6 @@
 /// https://en.wikipedia.org/wiki/Binary_heap#Heap_operations
 public struct BinaryHeap<Element> {
-    public private(set) var storage: ContiguousArray<Element>
+    private var array: ContiguousArray<Element>
     
     /// - Returns: `true` if `a` should be closer to the root than `b`.
     public typealias Comparator = (Element, Element) -> Bool
@@ -9,96 +9,107 @@ public struct BinaryHeap<Element> {
     
     // MARK: - creations
     public init(_ comparator: @escaping Comparator) {
-        self.storage = []
+        self.array = []
         self.comparator = comparator
     }
     
     // MARK: - index calculations
     
-    /// - Returns: `nil` if `i` is not a valid index or does not have parent.
+    /// - Returns: `nil` if `i` is not a valid index or has no parent.
     public func parentIndex(of i: Int) -> Int? {
-        guard storage.indices.contains(i) else { return nil }
+        guard array.indices.contains(i) else { return nil }
         if i == 0 { return nil }
         return (i - 1) / 2
     }
     
-    /// - Returns: `nil` if `i` is not a valid index or does not have left child.
+    /// - Returns: `nil` if `i` is not a valid index or has no left child.
     public func leftChildIndex(of i: Int) -> Int? {
-        guard storage.indices.contains(i) else { return nil }
+        let indices = array.indices
+        
+        guard indices.contains(i) else { return nil }
         let leftChild = 2 * i  + 1
-        return storage.indices.contains(leftChild) ? leftChild : nil
+        return indices.contains(leftChild) ? leftChild : nil
     }
     
-    /// - Returns: `nil` if `i` is not a valid index or does not have right child.
+    /// - Returns: `nil` if `i` is not a valid index or has no right child.
     public func rightChildIndex(of i: Int) -> Int? {
-        guard storage.indices.contains(i) else { return nil }
+        let indices = array.indices
+        
+        guard indices.contains(i) else { return nil }
         let rightChild = 2 * i  + 2
-        return storage.indices.contains(rightChild) ? rightChild : nil
+        return indices.contains(rightChild) ? rightChild : nil
     }
 
     // MARK: - operations
     @discardableResult
     public mutating func push(_ element: Element) -> Int {
-        storage.append(element)
-        return heapifyUp(storage.count - 1)
+        array.append(element)
+        return heapifyUp(array.count - 1)
     }
     
     @discardableResult
-    public mutating func remove(at i: Int) -> Element {
-        precondition(storage.indices.contains(i))
-        
-        if i == storage.endIndex - 1 {
-            return storage.removeLast()
+    public mutating func pop() -> Element? {
+        if array.isEmpty { return nil }
+        return remove(at: 0)
+    }
+    
+    public func peek() -> Element? {
+        array.first
+    }
+    
+    /// pop root and push a new element.
+    /// More efficient than pop followed by push, since only need to balance once, not twice, and appropriate for fixed-size heaps.
+    public mutating func popAndPush(_ element: Element) -> Element? {
+        if array.isEmpty {
+            array.append(element)
+            return nil
         }
         
-        let element = storage[i]
-        storage.swapAt(i, storage.count - 1)
-        storage.removeLast()
+        let root = array[0]
+        array[0] = element
+        heapifyDown(0)
+        
+        return root
+    }
+    
+    @discardableResult
+    private mutating func remove(at i: Int) -> Element {
+        precondition(array.indices.contains(i))
+        
+        if i == array.endIndex - 1 {
+            return array.removeLast()
+        }
+        
+        let element = array[i]
+        array.swapAt(i, array.count - 1)
+        array.removeLast()
         
         heapifyDown(i)
         
         return element
     }
     
-    @discardableResult
-    public mutating func pop() -> Element? {
-        if storage.isEmpty { return nil }
-        return remove(at: 0)
-    }
-    
-    public func peek() -> Element? {
-        storage.first
-    }
-    
-    /// pop root and push a new element.
-    /// More efficient than pop followed by push, since only need to balance once, not twice, and appropriate for fixed-size heaps.
-    public mutating func popAndPush(_ element: Element) -> Element? {
-        if storage.isEmpty {
-            storage.append(element)
-            return nil
-        }
-        
-        let root = storage[0]
-        storage[0] = element
-        heapifyDown(0)
-        
-        return root
+    public mutating func removeAll(where shouldBeRemoved: (Element) throws -> Bool) rethrows {
+        var copy = self.array
+        try copy.removeAll(where: shouldBeRemoved)
+        self = BinaryHeap.heapify(copy, comparator: comparator)
     }
     
     public mutating func removeAll(keepingCapacity: Bool = false) {
-        storage.removeAll(keepingCapacity: keepingCapacity)
+        array.removeAll(keepingCapacity: keepingCapacity)
     }
     
     @discardableResult
     private mutating func heapifyUp(_ i: Int) -> Int {
         var index = i
-        let element = storage[index]
+        let element = array[index]
         
         while let parentIndex = self.parentIndex(of: index) {
-            if comparator(storage[parentIndex], element) {
+            if comparator(array[parentIndex], element) {
                 break
             }
-            storage.swapAt(parentIndex, index)
+            
+            array.swapAt(parentIndex, index)
             
             index = parentIndex
         }
@@ -110,15 +121,15 @@ public struct BinaryHeap<Element> {
     private mutating func heapifyDown(_ i: Int) -> Int {
         var index = i
         
-        if let left = leftChildIndex(of: i), comparator(storage[left], storage[index]) {
+        if let left = leftChildIndex(of: i), comparator(array[left], array[index]) {
             index = left
         }
-        if let right = rightChildIndex(of: i), comparator(storage[right], storage[index]) {
+        if let right = rightChildIndex(of: i), comparator(array[right], array[index]) {
             index = right
         }
         
         if index != i {
-            storage.swapAt(index, i)
+            array.swapAt(index, i)
             return heapifyDown(index)
         }
         
@@ -127,9 +138,9 @@ public struct BinaryHeap<Element> {
     
     public static func heapify<S>(_ s: S, comparator: @escaping Comparator) -> BinaryHeap<S.Element> where S: Sequence, S.Element == Element {
         var heap = BinaryHeap<Element>(comparator)
-        heap.storage = ContiguousArray(s)
+        heap.array = ContiguousArray(s)
 
-        guard var index = heap.parentIndex(of: heap.storage.count - 1) else {
+        guard var index = heap.parentIndex(of: heap.array.count - 1) else {
             return heap
         }
         
@@ -143,11 +154,11 @@ public struct BinaryHeap<Element> {
     
     // MARK: - properties
     public var count: Int {
-        storage.count
+        array.count
     }
     
     public var isEmpty: Bool {
-        storage.isEmpty
+        array.isEmpty
     }
 }
 
