@@ -1,5 +1,5 @@
 import XCTest
-@testable import Some
+@testable import EasyCollections
 
 final class BinaryHeapTests: XCTestCase {
     

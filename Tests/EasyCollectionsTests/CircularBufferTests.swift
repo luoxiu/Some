@@ -1,5 +1,5 @@
 import XCTest
-@testable import Some
+@testable import EasyCollections
 
 final class CircularBufferTests: XCTestCase {
     
@@ -100,13 +100,4 @@ final class CircularBufferTests: XCTestCase {
             bufferIndex = buffer.index(before: bufferIndex)
         }
     }
-    
-    static var allTests = [
-        ("testAppendAndPopLast", testAppendAndPopLast),
-        ("testPrependAndPopFirst", testPrependAndPopFirst),
-        ("testRemoveAt", testRemoveAt),
-        ("testCount", testCount),
-        ("testIsEmpty", testIsEmpty),
-        ("testIndex", testIndex),
-    ]
 }
