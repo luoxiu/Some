@@ -1,4 +1,4 @@
-# EasyCollections
+# Some
 
 The missing iterables in Swift.
 

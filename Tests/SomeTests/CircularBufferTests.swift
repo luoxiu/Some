@@ -1,5 +1,5 @@
 import XCTest
-@testable import EasyCollections
+@testable import Some
 
 final class CircularBufferTests: XCTestCase {
     
